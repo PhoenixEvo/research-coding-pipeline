@@ -90,6 +90,10 @@ async def test_full_pipeline_end_to_end_with_mock_executors(tmp_path: Path) -> N
     output_dir = Path(final_state["project_config"]["output_dir"])
     assert (output_dir / "final_report.md").exists()
     assert (output_dir / "state.json").exists()
+    assert (output_dir / "report.md").exists()
+    assert (output_dir / "exp_configs.json").exists()
+    assert (output_dir / "analysis_report.md").exists()
+    assert (output_dir / "improvement_suggestions.json").exists()
     persisted = json.loads((output_dir / "state.json").read_text(encoding="utf-8"))
     assert len(persisted["experiment_results"]) == 4
 
@@ -225,6 +229,7 @@ async def test_timeout_becomes_failed_result(tmp_path: Path) -> None:
     experiment = result["experiment_results"][0]
     assert experiment["status"] == "failed"
     assert experiment["error"] == "experiment timed out"
+    assert "KaggleTimeoutError" in experiment["traceback"]
 
 
 def test_optimizer_conditional_decision(tmp_path: Path) -> None:

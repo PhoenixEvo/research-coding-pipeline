@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, TypedDict
+from typing import Any, NotRequired, TypedDict
 
 
 class ExperimentResult(TypedDict):
@@ -15,6 +15,7 @@ class ExperimentResult(TypedDict):
     platform: str
     duration: float
     error: str | None
+    traceback: NotRequired[str]
 
 
 class ResearchState(TypedDict):

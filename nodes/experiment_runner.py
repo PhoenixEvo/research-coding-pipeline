@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+import traceback
 from typing import Any, Awaitable, Callable
 
 from executors.kaggle_executor import run_kaggle_experiment
@@ -33,6 +34,7 @@ async def _run_one(
     try:
         result = await executor(active_config, project_config)
     except Exception as first_error:
+        error_traceback = traceback.format_exc()
         error_type = classify_error(first_error)
         LOGGER.warning(
             "Experiment %s failed: type=%s error=%s",
@@ -47,6 +49,7 @@ async def _run_one(
                 result = await modal_executor(active_config, project_config)
             except Exception as fallback_error:
                 first_error = fallback_error
+                error_traceback = traceback.format_exc()
                 error_type = classify_error(fallback_error)
             else:
                 return result, (
@@ -58,6 +61,7 @@ async def _run_one(
                 result = await executor(active_config, project_config)
             except Exception as retry_error:
                 first_error = retry_error
+                error_traceback = traceback.format_exc()
                 error_type = classify_error(retry_error)
             else:
                 return result, (
@@ -74,6 +78,7 @@ async def _run_one(
             "platform": platform,
             "duration": time.monotonic() - started,
             "error": str(first_error),
+            "traceback": error_traceback,
         }
         return result, f"{result['id']}: failed ({error_type.value})"
 

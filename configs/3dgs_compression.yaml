@@ -57,7 +57,7 @@ kaggle:
   code_file: kernel.py
   metrics_file: metrics.json
   enable_gpu: true
-  enable_internet: false
+  enable_internet: true
   poll_interval_seconds: 300
   timeout_seconds: 28800
   dataset_sources: []

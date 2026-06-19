@@ -73,7 +73,76 @@ def save_state(state: ResearchState) -> Path:
         encoding="utf-8",
     )
     os.replace(temporary, target)
+    _save_bridge_artifacts(state, output_dir)
     return target
+
+
+def _save_bridge_artifacts(state: ResearchState, output_dir: Path) -> None:
+    """Persist the exact artifacts consumed by the Codex prompt bridge."""
+
+    project_config = state["project_config"]
+    results = state["experiment_results"]
+    if results:
+        exp_configs = {
+            "project_name": output_dir.name,
+            "primary_metric": project_config.get("primary_metric"),
+            "experiment_results": results,
+        }
+        (output_dir / "exp_configs.json").write_text(
+            json.dumps(exp_configs, indent=2, ensure_ascii=False, default=str),
+            encoding="utf-8",
+        )
+
+        failures = [
+            result
+            for result in results
+            if result.get("status") != "completed" or result.get("error")
+        ]
+        if failures:
+            error_sections = []
+            for result in failures:
+                error_text = result.get("traceback") or result.get("error") or "Unknown error"
+                error_sections.append(
+                    "\n".join(
+                        [
+                            f"Experiment: {result.get('id', 'unknown')}",
+                            "Config:",
+                            json.dumps(
+                                result.get("config", {}),
+                                indent=2,
+                                ensure_ascii=False,
+                                default=str,
+                            ),
+                            "Error traceback:",
+                            str(error_text),
+                        ]
+                    )
+                )
+            (output_dir / "error_log.txt").write_text(
+                "\n\n=== NEXT ERROR ===\n\n".join(error_sections),
+                encoding="utf-8",
+            )
+
+    if state["analysis_report"]:
+        (output_dir / "analysis_report.md").write_text(
+            state["analysis_report"],
+            encoding="utf-8",
+        )
+    if state["improvement_suggestions"]:
+        (output_dir / "improvement_suggestions.json").write_text(
+            json.dumps(
+                state["improvement_suggestions"],
+                indent=2,
+                ensure_ascii=False,
+                default=str,
+            ),
+            encoding="utf-8",
+        )
+    if state["final_report"]:
+        (output_dir / "report.md").write_text(
+            state["final_report"],
+            encoding="utf-8",
+        )
 
 
 def load_state(state_path: str | Path) -> ResearchState:
