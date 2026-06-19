@@ -1,0 +1,68 @@
+name: 3D Gaussian Splatting Compression
+description: Optimize reconstruction quality, storage, and rendering speed.
+platform: kaggle
+output_dir: outputs/3dgs_compression
+random_seed: 42
+experiments_per_iteration: 4
+max_concurrency: 2
+max_experiments: 20
+max_iterations: 8
+time_budget_hours: 8
+improvement_threshold: 0.05
+primary_metric: psnr
+
+llm:
+  enabled: true
+  provider: google
+  fast_model: gemini-3.2-flash
+  analysis_model: gemini-3.5-flash
+  fallback_model: gemini-3.5-flash
+  temperature: 0.2
+
+metrics:
+  - name: psnr
+    direction: maximize
+  - name: model_size_mb
+    direction: minimize
+  - name: fps
+    direction: maximize
+
+baselines:
+  - name: Scaffold-GS
+    metrics:
+      psnr: 29.8
+      model_size_mb: 48
+  - name: LightGaussian
+    metrics:
+      psnr: 28.9
+      model_size_mb: 22
+
+search_space:
+  learning_rate:
+    min: 0.00001
+    max: 0.001
+    scale: log
+    samples: 5
+  pruning_ratio:
+    values: [0.2, 0.4, 0.6, 0.8]
+  lambda_rate:
+    values: [0.0001, 0.001, 0.01, 0.1]
+  context_channels:
+    values: [8, 16, 32, 64]
+
+kaggle:
+  username: your-kaggle-username
+  kernel_slug_prefix: 3dgs-compression
+  kernel_source_dir: training/3dgs
+  code_file: kernel.py
+  metrics_file: metrics.json
+  enable_gpu: true
+  enable_internet: false
+  poll_interval_seconds: 300
+  timeout_seconds: 28800
+  dataset_sources: []
+
+modal:
+  app_name: research-experiments
+  function_name: run_3dgs_experiment
+  timeout_seconds: 28800

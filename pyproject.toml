@@ -1,0 +1,26 @@
+[project]
+name = "research-pipeline"
+version = "0.1.0"
+description = "Reusable LangGraph pipeline for iterative AI research experiments"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "kaggle>=2.2.2",
+    "langchain-google-genai>=4.2.5",
+    "langgraph>=1.2.6",
+    "modal>=1.5.0",
+    "pandas>=3.0.3",
+    "plotly>=6.8.0",
+    "python-dotenv>=1.2.2",
+    "pyyaml>=6.0.3",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[project.scripts]
+research-pipeline = "pipeline:main"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]

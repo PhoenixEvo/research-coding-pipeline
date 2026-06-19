@@ -1,0 +1,67 @@
+name: Speech Emotion Recognition CNN-BiLSTM
+description: Tune a CNN-BiLSTM speech emotion classifier.
+platform: kaggle
+output_dir: outputs/ser_cnn_bilstm
+random_seed: 42
+experiments_per_iteration: 3
+max_concurrency: 2
+max_experiments: 15
+max_iterations: 7
+time_budget_hours: 8
+improvement_threshold: 0.002
+primary_metric: f1_weighted
+
+llm:
+  enabled: true
+  provider: google
+  fast_model: gemini-3.2-flash
+  analysis_model: gemini-3.5-flash
+  fallback_model: gemini-3.5-flash
+  temperature: 0.2
+
+metrics:
+  - name: accuracy
+    direction: maximize
+  - name: f1_weighted
+    direction: maximize
+
+baselines:
+  - name: ViSoBERT baseline
+    metrics:
+      accuracy: 0.742
+      f1_weighted: 0.731
+
+search_space:
+  learning_rate:
+    min: 0.00001
+    max: 0.001
+    scale: log
+    samples: 5
+  dropout:
+    values: [0.1, 0.2, 0.3, 0.4, 0.5]
+  num_bilstm_layers:
+    type: int
+    min: 1
+    max: 3
+    samples: 3
+  cnn_filters:
+    values: [32, 64, 128, 256]
+  batch_size:
+    values: [16, 32, 64]
+
+kaggle:
+  username: your-kaggle-username
+  kernel_slug_prefix: ser-cnn-bilstm
+  kernel_source_dir: training/ser
+  code_file: kernel.py
+  metrics_file: metrics.json
+  enable_gpu: true
+  enable_internet: false
+  poll_interval_seconds: 300
+  timeout_seconds: 28800
+  dataset_sources: []
+
+modal:
+  app_name: research-experiments
+  function_name: run_ser_experiment
+  timeout_seconds: 28800
